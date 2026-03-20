@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>India's No-1 PinCode Search Engine</title>
+<meta name="description" content="Search Indian PIN codes instantly. Find 6-digit postal codes for any city, area or post office in India."/>
+<style>
+/* ══════════════════════════════════════
+   YOUR ORIGINAL CSS — 100% UNCHANGED
+══════════════════════════════════════ */
+.pcs *{margin:0;padding:0;box-sizing:border-box}
+.pcs{
+  font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+  background:#f5f5f5;padding:20px;line-height:1.6;cursor:default;
+  max-width:800px;margin:0 auto;
+}
+.pcs-card{
+  background:#fff;border-radius:12px;
+  box-shadow:0 4px 12px rgba(0,0,0,.1);padding:30px;margin-bottom:20px;
+}
+.pcs-header{text-align:center;margin-bottom:24px}
+.pcs-title{font-size:26px;color:#2c3e50;margin-bottom:6px}
+.pcs-sub{color:#7f8c8d;font-size:15px}
+.pcs-bar-wrap{width:100%;max-width:560px;margin:0 auto 16px;position:relative;}
+.pcs-input{width:100%;padding:13px 90px 13px 16px;font-size:15px;border:2px solid #3498db;border-radius:10px;background:#fff;transition:border-color .2s,box-shadow .2s;}
+.pcs-input:focus{outline:none;border-color:#2980b9;box-shadow:0 0 0 3px rgba(52,152,219,.18)}
+.pcs-btn{position:absolute;right:4px;top:4px;bottom:4px;padding:0 18px;background:#3498db;color:#fff;border:none;border-radius:7px;cursor:pointer;font-size:14px;font-weight:600;transition:background .2s;white-space:nowrap;}
+.pcs-btn:hover{background:#2980b9}
+.pcs-drop{position:absolute;left:0;right:0;top:calc(100% + 4px);background:#fff;border:1px solid #ddd;border-radius:8px;box-shadow:0 6px 24px rgba(0,0,0,.13);z-index:1000;display:none;overflow:hidden;max-height:300px;overflow-y:auto;}
+.pcs-progress{height:3px;background:#e8f4fb;overflow:hidden;flex-shrink:0}
+.pcs-progress-inner{height:100%;width:40%;background:#3498db;animation:pcs-slide .7s ease-in-out infinite;}
+@keyframes pcs-slide{0%{margin-left:-40%}100%{margin-left:100%}}
+.pcs-drop-hint{padding:10px 14px;color:#999;font-size:13px;display:flex;align-items:center;gap:8px;}
+.pcs-drop-zone{padding:10px 14px;font-size:13px;color:#666;background:#fffbf0;border-left:3px solid #f39c12;}
+.pcs-row{display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;border-bottom:1px solid #f2f2f2;font-size:14px;transition:background .18s ease,padding-left .18s ease,border-left .18s ease;border-left:3px solid transparent;}
+.pcs-row:last-child{border-bottom:none}
+.pcs-row:hover,.pcs-row.focus{background:linear-gradient(to right,#e8f4fc,#f4faff);padding-left:18px;border-left:3px solid #3498db;}
+.pcs-row:hover .pcs-row-name,.pcs-row.focus .pcs-row-name{color:#2980b9}
+.pcs-row:hover .pcs-row-pin,.pcs-row.focus .pcs-row-pin{background:#3498db;color:#fff;transform:scale(1.05);}
+.pcs-row:hover .pcs-row-sub,.pcs-row.focus .pcs-row-sub{color:#7fb3d3}
+.pcs-row-pin{background:#f0f7ff;color:#2980b9;font-size:11px;font-weight:700;padding:2px 7px;border-radius:9px;flex-shrink:0;white-space:nowrap;transition:background .18s ease,color .18s ease,transform .18s ease;}
+.pcs-row-main{flex:1;min-width:0}
+.pcs-row-name{font-weight:600;color:#2c3e50;font-size:13px;line-height:1.3;transition:color .18s ease}
+.pcs-row-sub{color:#999;font-size:11px;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .18s ease}
+mark{background:#fff3cd;padding:0 1px;border-radius:2px}
+.pcs-labels-outer{width:100%;max-width:560px;margin:0 auto 8px;}
+.pcs-labels{display:flex;flex-wrap:wrap;row-gap:10px;column-gap:12px}
+.pcs-lbl{background:#e1f5fe;color:#0288d1;padding:6px 16px;border-radius:20px;font-size:13px;cursor:pointer;border:1.5px solid #b3e5fc;white-space:nowrap;transition:background .2s;}
+.pcs-lbl:hover{background:#b3e5fc}
+.pcs-hist-wrap{width:100%;max-width:560px;margin:16px auto 0;padding:16px;background:#fff;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,.08);}
+.pcs-hist-title{font-size:16px;color:#2c3e50;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid #3498db;}
+.pcs-hist-items{display:flex;flex-wrap:wrap;gap:8px}
+.pcs-hist-item{background:#f8f9fa;padding:3px 10px;border-radius:10px;font-size:12px;cursor:pointer;border:1px solid #e0e0e0;transition:background .2s;}
+.pcs-hist-item:hover{background:#e9ecef}
+#pcs-result{margin-top:16px}
+.pcs-status{background:#e8f5e9;color:#2e7d32;padding:10px 14px;border-radius:8px;margin-bottom:8px;font-size:14px;animation:pcs-fadein .25s ease;text-align:center;}
+@keyframes pcs-fadein{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.pcs-res-item{padding:12px 16px;margin:5px 0;background:#fff;border:1px solid #e0e0e0;border-radius:8px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:12px;transition:box-shadow .22s ease,background .22s ease,border-color .22s ease,transform .22s ease;position:relative;z-index:0;}
+.pcs-res-item:hover,.pcs-res-item.sel{background:#fffaf4;border-color:#ffb74d;box-shadow:inset 3px 0 0 #ff9800,0 6px 20px rgba(255,152,0,.22),0 1px 4px rgba(0,0,0,.06);transform:translateY(-2px) scale(1.01);z-index:1;}
+.pcs-res-icon{font-size:17px;flex-shrink:0;transition:transform .2s ease;}
+.pcs-res-item:hover .pcs-res-icon,.pcs-res-item.sel .pcs-res-icon{transform:scale(1.25) rotate(-8deg);}
+.pcs-res-body{flex:1;min-width:0}
+.pcs-res-name{font-weight:700;color:#2c3e50;font-size:14px;transition:color .2s ease,transform .2s ease;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pcs-res-item:hover .pcs-res-name,.pcs-res-item.sel .pcs-res-name{color:#e65100;transform:translateX(5px);}
+.pcs-res-loc{font-size:11px;color:#bbb;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .2s ease,transform .2s ease;}
+.pcs-res-item:hover .pcs-res-loc,.pcs-res-item.sel .pcs-res-loc{color:#f57c00;transform:translateX(5px);}
+.pcs-res-badge{background:#f5f5f5;color:#888;font-size:11px;font-weight:700;padding:3px 9px;border-radius:10px;flex-shrink:0;white-space:nowrap;border:1px solid #e0e0e0;transition:background .2s ease,color .2s ease,border-color .2s ease,transform .2s ease;}
+.pcs-res-item:hover .pcs-res-badge,.pcs-res-item.sel .pcs-res-badge{background:#ff9800;color:#fff;border-color:#ff9800;transform:scale(1.06);}
+.pcs-nearby-title{color:red;margin:14px 0 8px;font-size:16px}
+.pcs-nearby-labels{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.pcs-nearby-item{background:#ffcccc;color:#2c3e50;padding:7px 11px;border-radius:14px;font-size:13px;cursor:pointer;border:1.5px solid #e57373;white-space:nowrap;transition:background .2s;}
+.pcs-nearby-item:hover{background:#ff9999;color:#fff}
+.pcs-popup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;padding:24px;border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.2);z-index:1001;width:90%;max-width:400px;}
+.pcs-popup-close{position:absolute;top:12px;right:12px;background:#e74c3c;color:#fff;border:none;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;}
+.pcs-popup-title{font-size:18px;color:#2c3e50;margin-bottom:16px;padding-right:32px}
+.pcs-popup-body{margin-bottom:16px}
+.pcs-drow{margin-bottom:9px;font-size:13px}
+.pcs-dlbl{font-weight:700;color:#7f8c8d;margin-right:6px}
+.pcs-copy-btn{background:#4CAF50;color:#fff;border:none;padding:7px 14px;border-radius:5px;cursor:pointer;font-size:13px;transition:background .2s;}
+.pcs-copy-btn:hover{background:#45a049}
+.pcs-copy-btn.copied{background:#3498db}
+.pcs-copy-btn.copied .cp-yes{display:inline}
+.pcs-copy-btn.copied .cp-no{display:none}
+.cp-yes{display:none}
+.pcs-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000}
+@media(max-width:600px){.pcs{padding:10px}.pcs-card{padding:16px}}
+
+/* ══════════════════════════════════════
+   NEW ADDITIONS ONLY
+   (does not touch any original styles)
+══════════════════════════════════════ */
+
+/* "See Full Information" button in popup */
+.pcs-fullinfo-btn{
+  background:#3498db;color:#fff;border:none;
+  padding:7px 14px;border-radius:5px;cursor:pointer;
+  font-size:13px;transition:background .2s;margin-left:8px;
+}
+.pcs-fullinfo-btn:hover{background:#2980b9}
+
+/* Tiny URL breadcrumb link under result name */
+.pcs-res-urllink{
+  display:inline-block;margin-top:3px;
+  font-size:10px;color:#3498db;cursor:pointer;
+  font-family:monospace;
+}
+.pcs-res-item:hover .pcs-res-urllink{text-decoration:underline}
+
+/* ── FULL INFO PAGE ── */
+#fullpage{display:none;animation:pcs-fadein .3s ease}
+.fp-wrap{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:#f5f5f5;min-height:100vh;max-width:800px;margin:0 auto;padding:16px;}
+
+/* Breadcrumb */
+.fp-bc{display:flex;align-items:center;flex-wrap:wrap;gap:4px;background:#fff;border-radius:8px;padding:10px 14px;margin-bottom:12px;box-shadow:0 2px 6px rgba(0,0,0,.06);font-size:12px;}
+.fp-bc-link{color:#3498db;cursor:pointer;padding:3px 8px;border-radius:4px;transition:background .15s;font-weight:500;}
+.fp-bc-link:hover{background:#e8f4fb}
+.fp-bc-sep{color:#bbb;font-size:11px}
+.fp-bc-cur{color:#2c3e50;font-weight:700;padding:3px 8px;background:#f0f7ff;border-radius:4px;border:1px solid #b3d9f7;}
+
+/* Back button */
+.fp-back{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1.5px solid #3498db;color:#3498db;padding:7px 16px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;margin-bottom:12px;transition:all .2s;font-family:'Segoe UI',sans-serif;}
+.fp-back:hover{background:#3498db;color:#fff}
+
+/* Ad box */
+.fp-ad{background:#fffde7;border:1px dashed #f9a825;border-radius:8px;padding:10px;text-align:center;font-size:12px;color:#f57f17;margin-bottom:14px;}
+
+/* Hero */
+.fp-hero{background:linear-gradient(135deg,#2c3e50,#3498db);color:#fff;border-radius:12px;padding:22px;margin-bottom:14px;box-shadow:0 4px 12px rgba(52,152,219,.25);}
+.fp-hero-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+.fp-pin-num{font-size:34px;font-weight:700;letter-spacing:3px}
+.fp-verified{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:4px 12px;border-radius:12px;font-size:12px;}
+.fp-po-name{font-size:20px;font-weight:600;margin-bottom:4px}
+.fp-po-loc{font-size:13px;opacity:.85}
+
+/* Detail grid */
+.fp-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.fp-dbox{background:#fff;border:1px solid #e0e0e0;border-radius:10px;padding:12px;box-shadow:0 2px 6px rgba(0,0,0,.04);}
+.fp-dlbl{font-size:10px;color:#7f8c8d;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px;font-family:'Segoe UI',sans-serif;}
+.fp-dval{font-size:14px;font-weight:700;color:#2c3e50}
+
+/* Content block */
+.fp-content{background:#fff;border:1px solid #e0e0e0;border-radius:10px;padding:16px;margin-bottom:14px;font-size:13px;line-height:1.8;color:#444;box-shadow:0 2px 6px rgba(0,0,0,.04);}
+.fp-content h2{font-size:16px;color:#2c3e50;margin-bottom:10px;font-weight:600;border-bottom:2px solid #3498db;padding-bottom:6px;}
+
+/* Same pincode section */
+.fp-section{background:#fff;border:1px solid #e0e0e0;border-radius:10px;padding:14px;margin-bottom:14px;box-shadow:0 2px 6px rgba(0,0,0,.04);}
+.fp-section-title{font-size:15px;font-weight:600;color:#2c3e50;margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid #eee;}
+.fp-same-row{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:#f8f9fa;border-radius:8px;margin-bottom:6px;cursor:pointer;font-size:13px;border:1px solid #e9ecef;transition:all .2s;}
+.fp-same-row:hover{background:#e8f4fb;border-color:#3498db;transform:translateX(3px);}
+.fp-same-row:hover .fp-sr-name{color:#2980b9}
+.fp-sr-name{font-weight:600;color:#2c3e50;transition:color .2s}
+.fp-sr-type{font-size:11px;color:#999}
+
+/* Nearby chips — same as original .pcs-nearby-item */
+.fp-nearby-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.fp-nearby-chip{background:#ffcccc;color:#2c3e50;padding:7px 11px;border-radius:14px;font-size:13px;cursor:pointer;border:1.5px solid #e57373;transition:background .2s;}
+.fp-nearby-chip:hover{background:#ff9999;color:#fff}
+
+/* Footer */
+.fp-footer{background:#2c3e50;color:#fff;border-radius:10px;padding:14px 18px;text-align:center;font-size:12px;margin-top:4px;}
+.fp-footer-links{display:flex;justify-content:center;gap:16px;margin-top:6px;opacity:.7;font-size:11px;}
+
+/* Hierarchy nav (Level pages) */
+.fp-hier-card{background:#fff;border:1px solid #e0e0e0;border-radius:10px;padding:14px;margin-bottom:14px;box-shadow:0 2px 6px rgba(0,0,0,.04);}
+.fp-hier-title{font-size:15px;font-weight:600;color:#2c3e50;margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid #eee;}
+.fp-item-row{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#f8f9fa;border-radius:8px;margin-bottom:6px;cursor:pointer;font-size:13px;border:1px solid #e9ecef;transition:all .2s;}
+.fp-item-row:hover{background:#fffaf4;border-color:#ffb74d;box-shadow:inset 3px 0 0 #ff9800;transform:translateY(-1px);}
+.fp-item-row:hover .fp-ir-name{color:#e65100}
+.fp-ir-name{font-weight:700;color:#2c3e50;font-size:13px;transition:color .2s}
+.fp-ir-sub{font-size:11px;color:#999;margin-top:1px}
+.fp-ir-badge{background:#f0f7ff;color:#2980b9;font-size:11px;font-weight:700;padding:3px 9px;border-radius:9px;border:1px solid #b3d9f7;white-space:nowrap;}
+.fp-item-row:hover .fp-ir-badge{background:#ff9800;color:#fff;border-color:#ff9800;}
+.fp-url-hint{font-size:10px;color:#3498db;font-family:monospace;margin-top:2px;}
+
+/* URL bar at top for demo */
+.site-urlbar{background:#f0f0f0;padding:6px 12px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #ddd;font-family:'Segoe UI',sans-serif;}
+.site-urlbar-field{flex:1;background:#fff;border:1px solid #ccc;border-radius:12px;padding:4px 14px;font-size:12px;color:#1a73e8;font-family:monospace;font-weight:600;}
+.site-dots{display:flex;gap:5px}
+.site-dot{width:10px;height:10px;border-radius:50%}
+</style>
+</head>
+<body>
+
+<!-- URL bar (shows current URL visually) -->
+<div class="site-urlbar">
+  <div class="site-dots">
+    <div class="site-dot" style="background:#e74c3c"></div>
+    <div class="site-dot" style="background:#f39c12"></div>
+    <div class="site-dot" style="background:#2ecc71"></div>
+  </div>
+  <div class="site-urlbar-field" id="url-display">pincodesearch.in</div>
+</div>
+
+<!-- ══════════════════════════════════════
+     YOUR ORIGINAL SEARCH PAGE — UNCHANGED
+══════════════════════════════════════ -->
+<div id="search-page">
+<div class="pcs">
+ <div class="pcs-card">
+
+  <div class="pcs-header">
+    <h1 class="pcs-title">India's No-1 PinCode Search Engine</h1>
+    <p class="pcs-sub">Search by Pincode, Post Office Name, or Area</p>
+  </div>
+
+  <div class="pcs-bar-wrap">
+    <input id="pcs-input" class="pcs-input"
+      type="text" placeholder="Enter Pincode, Post Office Name, or Area"
+      autocomplete="off" spellcheck="false"/>
+    <div id="pcs-drop" class="pcs-drop"></div>
+    <button class="pcs-btn" id="pcs-btn">Search</button>
+  </div>
+
+  <div class="pcs-labels-outer">
+    <div class="pcs-labels" id="pcs-labels"></div>
+  </div>
+
+  <div class="pcs-hist-wrap">
+    <div class="pcs-hist-title">Most People Search:</div>
+    <div class="pcs-hist-items" id="pcs-hist"></div>
+  </div>
+
+  <div id="pcs-result"></div>
+
+  <div id="pcs-nearby" style="display:none">
+    <div class="pcs-nearby-title">Nearby Areas:</div>
+    <div class="pcs-nearby-labels" id="pcs-nearby-labels"></div>
+  </div>
+
+ </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════
+     FULL INFO PAGE (hierarchical)
+══════════════════════════════════════ -->
+<div id="fullpage">
+<div class="fp-wrap">
+  <div class="fp-bc" id="fp-bc"></div>
+  <button class="fp-back" onclick="goBackToSearch()">← Back to Search</button>
+  <div class="fp-ad">📢 Google AdSense — 728×90 Leaderboard</div>
+
+  <!-- shown for pincode detail level -->
+  <div id="fp-pin-section">
+    <div class="fp-hero">
+      <div class="fp-hero-top">
+        <div class="fp-pin-num" id="fp-pin-num"></div>
+        <div class="fp-verified">✓ Verified</div>
+      </div>
+      <div class="fp-po-name" id="fp-po-name"></div>
+      <div class="fp-po-loc" id="fp-po-loc"></div>
+    </div>
+    <div class="fp-detail-grid">
+      <div class="fp-dbox"><div class="fp-dlbl">District</div><div class="fp-dval" id="fp-dist"></div></div>
+      <div class="fp-dbox"><div class="fp-dlbl">State</div><div class="fp-dval" id="fp-state"></div></div>
+      <div class="fp-dbox"><div class="fp-dlbl">Division</div><div class="fp-dval" id="fp-div"></div></div>
+      <div class="fp-dbox"><div class="fp-dlbl">Region</div><div class="fp-dval" id="fp-reg"></div></div>
+      <div class="fp-dbox"><div class="fp-dlbl">Circle</div><div class="fp-dval" id="fp-cir"></div></div>
+      <div class="fp-dbox"><div class="fp-dlbl">Branch Type</div><div class="fp-dval" id="fp-type"></div></div>
+    </div>
+    <div class="fp-content">
+      <h2 id="fp-content-title"></h2>
+      <p id="fp-content-body"></p>
+    </div>
+    <div class="fp-ad">📢 Google AdSense — 336×280 Rectangle</div>
+    <div class="fp-section">
+      <div class="fp-section-title" id="fp-same-title"></div>
+      <div id="fp-same-list"></div>
+    </div>
+    <div class="fp-section">
+      <div class="fp-section-title">Nearby Areas</div>
+      <div class="fp-nearby-chips" id="fp-nearby-chips"></div>
+    </div>
+  </div>
+
+  <!-- shown for state / district / po listing levels -->
+  <div id="fp-list-section" style="display:none">
+    <div class="fp-hier-card">
+      <div class="fp-hier-title" id="fp-list-title"></div>
+      <div id="fp-list-items"></div>
+    </div>
+  </div>
+
+  <div class="fp-footer">
+    © 2024 PincodeSearch.in — India's fastest pincode search engine
+    <div class="fp-footer-links">
+      <span>Privacy Policy</span><span>About Us</span><span>Contact</span><span>Sitemap</span>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+'use strict';
+const API='https://api.postalpincode.in';
+
+/* ══════════════════════════════════════════════
+   YOUR ORIGINAL LOCAL DATA — UNCHANGED
+══════════════════════════════════════════════ */
+const RAW=[
+  ["Andheri","Mumbai Suburban","Maharashtra",400058],["Bandra","Mumbai Suburban","Maharashtra",400050],
+  ["Borivali","Mumbai Suburban","Maharashtra",400066],["Chembur","Mumbai Suburban","Maharashtra",400071],
+  ["Dadar","Mumbai","Maharashtra",400014],["Dharavi","Mumbai","Maharashtra",400017],
+  ["Ghatkopar","Mumbai Suburban","Maharashtra",400077],["Kandivali","Mumbai Suburban","Maharashtra",400067],
+  ["Kurla","Mumbai Suburban","Maharashtra",400070],["Malad","Mumbai Suburban","Maharashtra",400064],
+  ["Mumbai GPO","Mumbai","Maharashtra",400001],["Mulund","Mumbai Suburban","Maharashtra",400080],
+  ["Powai","Mumbai Suburban","Maharashtra",400076],["Santacruz","Mumbai Suburban","Maharashtra",400054],
+  ["Thane","Thane","Maharashtra",400601],["Vile Parle","Mumbai Suburban","Maharashtra",400057],
+  ["Worli","Mumbai","Maharashtra",400018],
+  ["Connaught Place","Central Delhi","Delhi",110001],["Chandni Chowk","Central Delhi","Delhi",110006],
+  ["Dwarka","South West Delhi","Delhi",110075],["Janakpuri","West Delhi","Delhi",110058],
+  ["Karol Bagh","Central Delhi","Delhi",110005],["Lajpat Nagar","South Delhi","Delhi",110024],
+  ["Nehru Place","South Delhi","Delhi",110019],["New Delhi GPO","Central Delhi","Delhi",110001],
+  ["Pitampura","North West Delhi","Delhi",110034],["Rohini","North West Delhi","Delhi",110085],
+  ["Saket","South Delhi","Delhi",110017],["Vasant Kunj","South West Delhi","Delhi",110070],
+  ["Bangalore GPO","Bangalore Urban","Karnataka",560001],["Basavanagudi","Bangalore Urban","Karnataka",560004],
+  ["Electronic City","Bangalore Urban","Karnataka",560100],["HSR Layout","Bangalore Urban","Karnataka",560102],
+  ["Indiranagar","Bangalore Urban","Karnataka",560038],["Jayanagar","Bangalore Urban","Karnataka",560041],
+  ["JP Nagar","Bangalore Urban","Karnataka",560078],["Koramangala","Bangalore Urban","Karnataka",560034],
+  ["Malleswaram","Bangalore Urban","Karnataka",560003],["Marathahalli","Bangalore Urban","Karnataka",560037],
+  ["Whitefield","Bangalore Urban","Karnataka",560066],["Yelahanka","Bangalore Urban","Karnataka",560064],
+  ["Anna Nagar","Chennai","Tamil Nadu",600040],["Chennai GPO","Chennai","Tamil Nadu",600001],
+  ["Egmore","Chennai","Tamil Nadu",600008],["Mylapore","Chennai","Tamil Nadu",600004],
+  ["Nungambakkam","Chennai","Tamil Nadu",600034],["T Nagar","Chennai","Tamil Nadu",600017],
+  ["Tambaram","Kanchipuram","Tamil Nadu",600045],["Velachery","Chennai","Tamil Nadu",600042],
+  ["Ballygunge","Kolkata","West Bengal",700019],["Dum Dum","North 24 Parganas","West Bengal",700028],
+  ["Jadavpur","Kolkata","West Bengal",700032],["Kolkata GPO","Kolkata","West Bengal",700001],
+  ["Salt Lake","North 24 Parganas","West Bengal",700091],["Tollygunge","Kolkata","West Bengal",700033],
+  ["Banjara Hills","Hyderabad","Telangana",500034],["Begumpet","Hyderabad","Telangana",500016],
+  ["Gachibowli","Hyderabad","Telangana",500032],["Hyderabad GPO","Hyderabad","Telangana",500001],
+  ["Kondapur","Hyderabad","Telangana",500084],["Kukatpally","Hyderabad","Telangana",500072],
+  ["Madhapur","Hyderabad","Telangana",500081],["Secunderabad","Hyderabad","Telangana",500003],
+  ["Aundh","Pune","Maharashtra",411007],["Baner","Pune","Maharashtra",411045],
+  ["Hadapsar","Pune","Maharashtra",411028],["Kothrud","Pune","Maharashtra",411029],
+  ["Pimpri","Pune","Maharashtra",411017],["Pune GPO","Pune","Maharashtra",411001],
+  ["Shivajinagar","Pune","Maharashtra",411005],["Viman Nagar","Pune","Maharashtra",411014],
+  ["Ahmedabad GPO","Ahmedabad","Gujarat",380001],["Bopal","Ahmedabad","Gujarat",380058],
+  ["Navrangpura","Ahmedabad","Gujarat",380009],["Satellite","Ahmedabad","Gujarat",380015],
+  ["Maninagar","Ahmedabad","Gujarat",380008],
+  ["Jaipur GPO","Jaipur","Rajasthan",302001],["Malviya Nagar","Jaipur","Rajasthan",302017],
+  ["Mansarovar","Jaipur","Rajasthan",302020],["Vaishali Nagar","Jaipur","Rajasthan",302021],
+  ["Adajan","Surat","Gujarat",395009],["Surat GPO","Surat","Gujarat",395001],
+  ["Katargam","Surat","Gujarat",395004],
+  ["Aliganj","Lucknow","Uttar Pradesh",226024],["Gomti Nagar","Lucknow","Uttar Pradesh",226010],
+  ["Hazratganj","Lucknow","Uttar Pradesh",226001],["Lucknow GPO","Lucknow","Uttar Pradesh",226001],
+  ["Noida Sector 18","Gautam Buddha Nagar","Uttar Pradesh",201301],
+  ["Noida Sector 62","Gautam Buddha Nagar","Uttar Pradesh",201309],
+  ["Greater Noida","Gautam Buddha Nagar","Uttar Pradesh",201308],
+  ["Gurugram GPO","Gurugram","Haryana",122001],["DLF Phase 1","Gurugram","Haryana",122002],
+  ["Chandigarh GPO","Chandigarh","Chandigarh",160001],["Sector 17","Chandigarh","Chandigarh",160017],
+  ["Patna GPO","Patna","Bihar",800001],["Kankarbagh","Patna","Bihar",800020],
+  ["Bhopal GPO","Bhopal","Madhya Pradesh",462001],["MP Nagar","Bhopal","Madhya Pradesh",462011],
+  ["Indore GPO","Indore","Madhya Pradesh",452001],["Vijay Nagar","Indore","Madhya Pradesh",452010],
+  ["Nagpur GPO","Nagpur","Maharashtra",440001],["Dharampeth","Nagpur","Maharashtra",440010],
+  ["Coimbatore GPO","Coimbatore","Tamil Nadu",641001],["Gandhipuram","Coimbatore","Tamil Nadu",641012],
+  ["Kochi GPO","Ernakulam","Kerala",682001],["Ernakulam","Ernakulam","Kerala",682011],
+  ["Thiruvananthapuram GPO","Thiruvananthapuram","Kerala",695001],
+  ["Visakhapatnam GPO","Visakhapatnam","Andhra Pradesh",530001],["Waltair","Visakhapatnam","Andhra Pradesh",530004],
+  ["Varanasi GPO","Varanasi","Uttar Pradesh",221001],["Godowlia","Varanasi","Uttar Pradesh",221001],
+  ["Agra GPO","Agra","Uttar Pradesh",282001],["Kanpur GPO","Kanpur Nagar","Uttar Pradesh",208001],
+  ["Prayagraj GPO","Prayagraj","Uttar Pradesh",211001],
+  ["Srinagar GPO","Srinagar","Jammu & Kashmir",190001],
+  ["Jammu GPO","Jammu","Jammu & Kashmir",180001],
+  ["Guwahati GPO","Kamrup Metropolitan","Assam",781001],
+  ["Amritsar GPO","Amritsar","Punjab",143001],["Golden Temple","Amritsar","Punjab",143006],
+  ["Ludhiana GPO","Ludhiana","Punjab",141001],
+  ["Panaji","North Goa","Goa",403001],["Margao","South Goa","Goa",403601],["Calangute","North Goa","Goa",403516],
+  ["Nashik GPO","Nashik","Maharashtra",422001],["Aurangabad GPO","Aurangabad","Maharashtra",431001],
+  ["Raipur GPO","Raipur","Chhattisgarh",492001],["Ranchi GPO","Ranchi","Jharkhand",834001],
+  ["Dehradun GPO","Dehradun","Uttarakhand",248001],["Meerut GPO","Meerut","Uttar Pradesh",250001],
+  ["Mysore GPO","Mysore","Karnataka",570001],["Hubli GPO","Dharwad","Karnataka",580020],
+  ["Madurai GPO","Madurai","Tamil Nadu",625001],["Tiruchirappalli GPO","Tiruchirappalli","Tamil Nadu",620001],
+  ["Salem GPO","Salem","Tamil Nadu",636001],["Tiruvallur","Tiruvallur","Tamil Nadu",602001],
+  ["Kolhapur GPO","Kolhapur","Maharashtra",416001],["Solapur GPO","Solapur","Maharashtra",413001],
+  ["Vasai","Palghar","Maharashtra",401201],["Navi Mumbai","Thane","Maharashtra",400703],
+  ["Kalyan","Thane","Maharashtra",421301],["Dombivli","Thane","Maharashtra",421201],
+  ["Bhiwandi","Thane","Maharashtra",421302],["Panvel","Raigad","Maharashtra",410206],
+  ["Faridabad GPO","Faridabad","Haryana",121001],["Ghaziabad GPO","Ghaziabad","Uttar Pradesh",201001],
+  ["Allahabad","Prayagraj","Uttar Pradesh",211001],["Mathura GPO","Mathura","Uttar Pradesh",281001],
+  ["Aligarh GPO","Aligarh","Uttar Pradesh",202001],["Bareilly GPO","Bareilly","Uttar Pradesh",243001],
+  ["Moradabad GPO","Moradabad","Uttar Pradesh",244001],["Gorakhpur GPO","Gorakhpur","Uttar Pradesh",273001],
+  ["Jodhpur GPO","Jodhpur","Rajasthan",342001],["Kota GPO","Kota","Rajasthan",324001],
+  ["Udaipur GPO","Udaipur","Rajasthan",313001],["Ajmer GPO","Ajmer","Rajasthan",305001],
+  ["Bikaner GPO","Bikaner","Rajasthan",334001],
+  ["Rajkot GPO","Rajkot","Gujarat",360001],["Vadodara GPO","Vadodara","Gujarat",390001],
+  ["Bhavnagar GPO","Bhavnagar","Gujarat",364001],["Jamnagar GPO","Jamnagar","Gujarat",361001],
+  ["Jabalpur GPO","Jabalpur","Madhya Pradesh",482001],["Gwalior GPO","Gwalior","Madhya Pradesh",474001],
+  ["Bhilai","Durg","Chhattisgarh",490006],["Bilaspur GPO","Bilaspur","Chhattisgarh",495001],
+  ["Jamshedpur GPO","East Singhbhum","Jharkhand",831001],["Dhanbad GPO","Dhanbad","Jharkhand",826001],
+  ["Bokaro Steel City","Bokaro","Jharkhand",827001],
+  ["Durgapur","Paschim Bardhaman","West Bengal",713201],["Asansol GPO","Paschim Bardhaman","West Bengal",713301],
+  ["Siliguri GPO","Darjeeling","West Bengal",734001],["Hooghly","Hooghly","West Bengal",712101],
+  ["Bhubaneswar GPO","Khorda","Odisha",751001],["Cuttack GPO","Cuttack","Odisha",753001],
+  ["Dibrugarh GPO","Dibrugarh","Assam",786001],["Silchar GPO","Cachar","Assam",788001],
+  ["Shillong GPO","East Khasi Hills","Meghalaya",793001],
+  ["Imphal GPO","Imphal West","Manipur",795001],["Agartala GPO","West Tripura","Tripura",799001],
+  ["Kozhikode GPO","Kozhikode","Kerala",673001],["Thrissur GPO","Thrissur","Kerala",680001],
+  ["Kannur GPO","Kannur","Kerala",670001],["Kollam GPO","Kollam","Kerala",691001],
+  ["Nellore GPO","SPSR Nellore","Andhra Pradesh",524001],["Kurnool GPO","Kurnool","Andhra Pradesh",518001],
+  ["Guntur GPO","Guntur","Andhra Pradesh",522001],["Vijayawada GPO","Krishna","Andhra Pradesh",520001],
+  ["Warangal GPO","Warangal Urban","Telangana",506001],["Nizamabad GPO","Nizamabad","Telangana",503001],
+  ["Leh GPO","Leh","Ladakh",194101],["Shimla GPO","Shimla","Himachal Pradesh",171001],
+  ["Dharamsala","Kangra","Himachal Pradesh",176215],
+  ["Gangtok GPO","East Sikkim","Sikkim",737101],["Aizawl GPO","Aizawl","Mizoram",796001],
+  ["Kohima GPO","Kohima","Nagaland",797001],["Itanagar","Papum Pare","Arunachal Pradesh",791111],
+];
+
+const LOCAL=RAW.map(r=>({
+  Name:r[0],District:r[1],State:r[2],Pincode:String(r[3]),
+  Block:'NA',BranchType:'Post Office',Division:'N/A',
+  Region:'N/A',Circle:'N/A',Taluk:'N/A',_local:true
+}));
+
+function lSearch(q){
+  const k=q.toLowerCase();
+  return LOCAL.filter(o=>
+    o.Name.toLowerCase().includes(k)||
+    o.District.toLowerCase().includes(k)||
+    o.State.toLowerCase().includes(k)||
+    o.Pincode.includes(k)
+  );
+}
+
+/* ══════ PIN ZONE MAP — UNCHANGED ══════ */
+const ZONE={'11':'Delhi','12':'Haryana','13':'Punjab/HP','14':'Punjab','15':'Punjab',
+  '16':'Punjab/Chandigarh','17':'Himachal Pradesh','18':'J&K','19':'J&K',
+  '20':'UP West','21':'UP','22':'UP','23':'UP','24':'UP','25':'UP','26':'UP','27':'UP',
+  '28':'Rajasthan','29':'Rajasthan','30':'Rajasthan','31':'Rajasthan',
+  '32':'Rajasthan','33':'Rajasthan','34':'Rajasthan',
+  '36':'Gujarat','37':'Gujarat','38':'Gujarat','39':'Gujarat',
+  '40':'Maharashtra (Mumbai)','41':'Maharashtra','42':'Maharashtra',
+  '43':'Maharashtra','44':'Maharashtra','45':'MP','46':'MP','47':'MP','48':'MP',
+  '49':'Chhattisgarh','50':'Telangana/AP','51':'AP','52':'AP','53':'AP',
+  '56':'Karnataka','57':'Karnataka','58':'Karnataka','59':'Karnataka',
+  '60':'Tamil Nadu','61':'Tamil Nadu','62':'Tamil Nadu','63':'Tamil Nadu','64':'Tamil Nadu',
+  '67':'Kerala','68':'Kerala','69':'Kerala','70':'West Bengal','71':'WB','72':'WB',
+  '73':'WB','74':'WB','75':'Odisha','76':'Odisha','77':'Odisha','78':'Assam',
+  '79':'North East','80':'Bihar','81':'Bihar','82':'Bihar','83':'Jharkhand',
+  '84':'Bihar','85':'Bihar'};
+
+/* ══════ CACHE + FETCH — UNCHANGED ══════ */
+let mem={};
+try{const r=sessionStorage.getItem('pcs5');if(r)mem=JSON.parse(r);}catch(e){}
+function cg(k){return Object.prototype.hasOwnProperty.call(mem,k)?mem[k]:null;}
+function cs(k,v){mem[k]=v;try{sessionStorage.setItem('pcs5',JSON.stringify(mem));}catch(e){}}
+const fly={};
+let ac=null;
+function doFetch(url,key,abortPrev){
+  const h=cg(key);if(h!==null)return Promise.resolve(h);
+  if(fly[key])return fly[key];
+  if(abortPrev){if(ac)ac.abort();ac=new AbortController();}
+  const ctrl=abortPrev?ac:null;
+  const p=fetch(url,ctrl?{signal:ctrl.signal}:{})
+    .then(r=>r.json())
+    .then(d=>{delete fly[key];const o=(d[0]&&d[0].Status==='Success')?(d[0].PostOffice||[]):[];cs(key,o);return o;})
+    .catch(e=>{delete fly[key];throw e;});
+  fly[key]=p;return p;
+}
+function bg(url,key){
+  if(cg(key)!==null||fly[key])return;
+  const p=fetch(url).then(r=>r.json()).then(d=>{delete fly[key];const o=(d[0]&&d[0].Status==='Success')?(d[0].PostOffice||[]):[];cs(key,o);return o;}).catch(e=>{delete fly[key];});
+  fly[key]=p;
+}
+
+/* ══════ MERGE DEDUPE — UNCHANGED ══════ */
+function merge(...arrays){
+  const seen=new Set(),out=[];
+  for(const arr of arrays)for(const o of arr){const k=o.Name+'|'+o.Pincode;if(!seen.has(k)){seen.add(k);out.push(o);}}
+  return out;
+}
+function filt(arr,q){
+  const k=q.toLowerCase();
+  return arr.filter(o=>o.Name.toLowerCase().includes(k)||o.District.toLowerCase().includes(k)||o.State.toLowerCase().includes(k)||o.Pincode.includes(k));
+}
+
+/* ══════════════════════════════════════
+   URL HELPER (new)
+══════════════════════════════════════ */
+function toSlug(s){
+  return String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+}
+function buildSlug(o){
+  return toSlug(o.State)+'/'+toSlug(o.District)+'/'+toSlug(o.Name)+'/'+o.Pincode;
+}
+function setURL(path){
+  const full='pincodesearch.in/'+path;
+  document.getElementById('url-display').textContent=full;
+  try{history.pushState({},'','/'+path);}catch(e){}
+}
+
+/* ══════ SUGGESTION ENGINE — UNCHANGED ══════ */
+function onInput(){
+  const q=g('pcs-input').value.trim();
+  if(!q){closeDrop();return;}
+  const allDigits=/^\d+$/.test(q);
+  const full6=/^\d{6}$/.test(q);
+  if(full6){
+    const c=cg('pin:'+q);
+    if(c!==null){showRows(c,q,false);return;}
+    const loc=lSearch(q);
+    if(loc.length)showRows(loc,q,true);else showSpinner();
+    doFetch(`${API}/pincode/${q}`,'pin:'+q,true)
+      .then(r=>{if(g('pcs-input').value.trim()===q)showRows(r,q,false);})
+      .catch(e=>{if(e.name!=='AbortError'&&loc.length)showRows(loc,q,false);});
+    const n=parseInt(q,10);
+    [-3,-2,-1,1,2,3].forEach(d=>{const p=String(n+d).padStart(6,'0');if(p.length===6)bg(`${API}/pincode/${p}`,'pin:'+p);});
+    return;
+  }
+  if(allDigits){
+    const zone=q.length>=2?ZONE[q.slice(0,2)]:null;
+    let msg=`Enter ${6-q.length} more digit${6-q.length>1?'s':''} for pincode search`;
+    if(zone)msg+=` &mdash; <strong>${zone}</strong> region`;
+    showZone(msg);
+    if(q.length===5)for(let d=0;d<=9;d++)bg(`${API}/pincode/${q+d}`,'pin:'+(q+d));
+    return;
+  }
+  const loc=lSearch(q);
+  const cached=cacheOverlap(q);
+  const phase1=merge(loc,cached);
+  if(phase1.length){showRows(phase1,q,true);}else{showSpinner();}
+  const key='po:'+q.toLowerCase();
+  const h=cg(key);
+  if(h!==null){showRows(merge(h,loc),q,false);return;}
+  doFetch(`${API}/postoffice/${encodeURIComponent(q)}`,key,true)
+    .then(r=>{if(g('pcs-input').value.trim()!==q)return;showRows(merge(r,loc),q,false);})
+    .catch(e=>{if(e.name==='AbortError')return;if(phase1.length)showRows(phase1,q,false);else showHint('Could not load — check connection');});
+}
+function cacheOverlap(q){
+  const ql=q.toLowerCase();
+  const ex=cg('po:'+ql);if(ex)return filt(ex,q);
+  for(const k of Object.keys(mem)){
+    if(!k.startsWith('po:'))continue;
+    const kq=k.slice(3);
+    if(ql.startsWith(kq)||kq.startsWith(ql)){const f=filt(mem[k],q);if(f.length)return f;}
+  }
+  return[];
+}
+
+/* ══════ RENDER DROP — UNCHANGED ══════ */
+function showRows(offices,q,loading){
+  const drop=g('pcs-drop');drop.innerHTML='';
+  if(loading){const bar=ce('div');bar.className='pcs-progress';bar.innerHTML='<div class="pcs-progress-inner"></div>';drop.appendChild(bar);}
+  if(!offices||!offices.length){const h=ce('div');h.className='pcs-drop-hint';h.innerHTML=loading?'Searching&hellip;':`No results found for "<strong>${esc(q)}</strong>"`;drop.appendChild(h);drop.style.display='block';return;}
+  const ql=q.toLowerCase();
+  const sorted=[...offices].sort((a,b)=>{const al=a.Name.toLowerCase(),bl=b.Name.toLowerCase();return(al===ql?0:al.startsWith(ql)?1:2)-(bl===ql?0:bl.startsWith(ql)?1:2);});
+  const seen=new Set();
+  sorted.slice(0,12).forEach(o=>{
+    const key=o.Name+'|'+o.Pincode;if(seen.has(key))return;seen.add(key);
+    const row=ce('div');row.className='pcs-row';
+    const block=o.Block&&o.Block!=='NA'?o.Block+', ':'';
+    row.innerHTML=`<span style="font-size:15px;flex-shrink:0">&#128205;</span>
+      <span class="pcs-row-main">
+        <div class="pcs-row-name">${hlMatch(o.Name,q)}</div>
+        <div class="pcs-row-sub">${esc(block+o.District)}, ${esc(o.State)}</div>
+      </span>
+      <span class="pcs-row-pin">${o.Pincode}</span>`;
+    row.addEventListener('mousedown',e=>{e.preventDefault();g('pcs-input').value=o.Name;closeDrop();doSearch();});
+    drop.appendChild(row);
+  });
+  drop.style.display='block';
+}
+function showSpinner(){const drop=g('pcs-drop');drop.innerHTML=`<div class="pcs-progress"><div class="pcs-progress-inner"></div></div><div class="pcs-drop-hint">Loading suggestions&hellip;</div>`;drop.style.display='block';}
+function showHint(m){const drop=g('pcs-drop');drop.innerHTML=`<div class="pcs-drop-hint">${m}</div>`;drop.style.display='block';}
+function showZone(h){const drop=g('pcs-drop');drop.innerHTML=`<div class="pcs-drop-zone">${h}</div>`;drop.style.display='block';}
+function closeDrop(){const d=g('pcs-drop');if(d){d.style.display='none';d.innerHTML='';}}
+function hlMatch(text,q){const i=text.toLowerCase().indexOf(q.toLowerCase());if(i<0)return esc(text);return esc(text.slice(0,i))+'<mark>'+esc(text.slice(i,i+q.length))+'</mark>'+esc(text.slice(i+q.length));}
+
+/* ══════ KEYBOARD NAV — UNCHANGED ══════ */
+function onKey(e){
+  const drop=g('pcs-drop');
+  if(drop.style.display==='none'){if(e.key==='Enter')doSearch();return;}
+  const rows=drop.querySelectorAll('.pcs-row');
+  const cur=drop.querySelector('.pcs-row.focus');
+  let idx=-1;rows.forEach((r,i)=>{if(r===cur)idx=i;});
+  if(e.key==='ArrowDown'){e.preventDefault();rows.forEach(r=>r.classList.remove('focus'));const n=Math.min(idx+1,rows.length-1);if(rows[n])rows[n].classList.add('focus');}
+  else if(e.key==='ArrowUp'){e.preventDefault();rows.forEach(r=>r.classList.remove('focus'));const n=Math.max(idx-1,0);if(rows[n])rows[n].classList.add('focus');}
+  else if(e.key==='Enter'){cur?cur.dispatchEvent(new MouseEvent('mousedown')):doSearch();}
+  else if(e.key==='Escape'){closeDrop();}
+}
+
+/* ══════ MAIN SEARCH — MOSTLY UNCHANGED, URL update added ══════ */
+function doSearch(){
+  closeDrop();
+  const q=g('pcs-input').value.trim();
+  const res=g('pcs-result');
+  if(!q){res.innerHTML="<p style='color:#e74c3c;margin-top:10px'>Please enter a search term</p>";return;}
+  addHist(q);hideNearby();
+  const isPin=/^\d{6}$/.test(q);
+  const key=isPin?'pin:'+q:'po:'+q.toLowerCase();
+  const url=isPin?`${API}/pincode/${q}`:`${API}/postoffice/${encodeURIComponent(q)}`;
+
+  /* NEW: update URL when searching */
+  if(isPin){
+    setURL(q);
+  } else {
+    setURL(toSlug(q));
+  }
+
+  const loc=isPin?[]:lSearch(q);
+  if(loc.length){
+    res.innerHTML=`<div class="pcs-status">Showing ${loc.length} instant result${loc.length>1?'s':''} &mdash; loading more&hellip;</div>`;
+    renderRows(loc);
+  }else{
+    res.innerHTML='<div class="pcs-status">Searching&hellip;</div>';
+  }
+  const cached=cg(key);
+  if(cached!==null){
+    const kws=q.split(',').map(k=>k.trim().toLowerCase()).filter(Boolean);
+    const r=isPin?cached:filt(cached,kws.join(' '));
+    const merged=merge(r,loc);
+
+    /* NEW: if we have results, refine URL with state/district */
+    if(merged.length)updateURLFromResults(merged,q);
+
+    res.innerHTML=`<div class="pcs-status">Found <strong>${merged.length}</strong> result${merged.length!==1?'s':''} for "<strong>${esc(q)}</strong>"</div>`;
+    renderRows(merged);
+    if(merged.length)findNearby(merged[0]);
+    return;
+  }
+  const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),2500));
+  Promise.race([doFetch(url,key,false),timeout])
+    .then(all=>{
+      const kws=q.split(',').map(k=>k.trim().toLowerCase()).filter(Boolean);
+      const r=isPin?all:filt(all,kws.join(' '));
+      const merged=merge(r,loc);
+      if(merged.length)updateURLFromResults(merged,q);
+      res.innerHTML=`<div class="pcs-status">Found <strong>${merged.length}</strong> result${merged.length!==1?'s':''} for "<strong>${esc(q)}</strong>"</div>`;
+      renderRows(merged);
+      if(merged.length)findNearby(merged[0]);
+    })
+    .catch(e=>{
+      if(e.message==='timeout'){
+        if(loc.length){
+          res.innerHTML=`<div class="pcs-status" style="background:#fff8e1;color:#f57f17">Showing ${loc.length} result${loc.length>1?'s':''} &mdash; still loading&hellip;</div>`;
+          renderRows(loc);
+          if(fly[key]){fly[key].then(all=>{const kws=q.split(',').map(k=>k.trim().toLowerCase()).filter(Boolean);const r=isPin?all:filt(all,kws.join(' '));const merged=merge(r,loc);if(merged.length)updateURLFromResults(merged,q);res.innerHTML=`<div class="pcs-status">Found <strong>${merged.length}</strong> result${merged.length!==1?'s':''} for "<strong>${esc(q)}</strong>"</div>`;renderRows(merged);if(merged.length)findNearby(merged[0]);}).catch(()=>{});}
+        }else{res.innerHTML="<p style='color:#e74c3c;margin-top:10px'>Connection is slow — please try again.</p>";}
+      }else if(e.name!=='AbortError'){
+        if(loc.length){res.innerHTML=`<div class="pcs-status">Showing ${loc.length} local result${loc.length>1?'s':''} (API unavailable)</div>`;renderRows(loc);}
+        else res.innerHTML="<p style='color:#e74c3c;margin-top:10px'>Error fetching data. Please try again.</p>";
+      }
+    });
+}
+
+/* NEW: smarter URL once we know state/district */
+function updateURLFromResults(results,q){
+  const isPin=/^\d{6}$/.test(q);
+  const first=results[0];
+  if(!first)return;
+  if(isPin){
+    /* pincode search → full hierarchy URL */
+    setURL(toSlug(first.State)+'/'+toSlug(first.District)+'/'+toSlug(first.Name)+'/'+first.Pincode);
+  } else if(results.every(r=>r.District===first.District)){
+    /* all same district → district-level URL */
+    setURL(toSlug(first.State)+'/'+toSlug(first.District));
+  } else if(results.every(r=>r.State===first.State)){
+    /* all same state → state-level URL */
+    setURL(toSlug(first.State));
+  }
+  /* mixed states → keep slug of query */
+}
+
+/* ══════ RENDER ROWS — ONLY CHANGE: added URL link + click updates URL ══════ */
+function renderRows(results){
+  const res=g('pcs-result');
+  if(!results.length){res.innerHTML+='<div class="pcs-status" style="background:#fff3e0;color:#e65100">No results found</div>';return;}
+  let html=res.innerHTML+'<div>';
+  results.forEach(r=>{
+    const loc=[];
+    if(r.Block&&r.Block!=='NA')loc.push(r.Block);
+    if(r.District)loc.push(r.District);
+    if(r.State)loc.push(r.State);
+    const slug=buildSlug(r);
+    html+=`<div class="pcs-res-item" onclick="window.pcsDetail('${ea(r.Name)}','${r.Pincode}',this)">
+      <span class="pcs-res-icon">&#128205;</span>
+      <span class="pcs-res-body">
+        <div class="pcs-res-name">${esc(r.Name)}</div>
+        <div class="pcs-res-loc">${esc(loc.join(', '))}</div>
+        <span class="pcs-res-urllink" onclick="event.stopPropagation();window.pcsFullPage('${ea(r.Name)}','${r.Pincode}')">
+          ↗ pincodesearch.in/${slug}
+        </span>
+      </span>
+      <span class="pcs-res-badge">${r.Pincode}</span>
+    </div>`;
+  });
+  res.innerHTML=html+'</div>';
+}
+
+/* ══════ POPUP — ONLY CHANGE: added "See Full Information" button ══════ */
+window.pcsDetail=function(name,pin,el){
+  document.querySelectorAll('.pcs-res-item').forEach(i=>i.classList.remove('sel'));
+  el.classList.add('sel');
+  let popup=g('pcs-popup'),ov=g('pcs-ov');
+  if(!popup){
+    popup=ce('div');popup.className='pcs-popup';popup.id='pcs-popup';document.body.appendChild(popup);
+    ov=ce('div');ov.className='pcs-overlay';ov.id='pcs-ov';ov.onclick=window.pcsClose;document.body.appendChild(ov);
+  }
+  popup.innerHTML=`<button class="pcs-popup-close" onclick="window.pcsClose()">&#x00D7;</button><div class="pcs-popup-body">Loading&hellip;</div>`;
+  popup.style.display='block';ov.style.display='block';
+  doFetch(`${API}/pincode/${pin}`,'pin:'+pin,false).then(all=>{
+    const o=all.find(p=>p.Name===name)||all[0];if(!o)return;
+    const slug=toSlug(o.State)+'/'+toSlug(o.District)+'/'+toSlug(o.Name)+'/'+o.Pincode;
+    popup.innerHTML=`
+      <button class="pcs-popup-close" onclick="window.pcsClose()">&#x00D7;</button>
+      <h3 class="pcs-popup-title">${esc(o.Name)} <small style="font-size:13px;color:#999">(${esc(o.BranchType||'')})</small></h3>
+      <div class="pcs-popup-body">
+        <div class="pcs-drow"><span class="pcs-dlbl">Address:</span>${o.Block&&o.Block!=='NA'?esc(o.Block)+', ':''}${esc(o.District)}, ${esc(o.State)}</div>
+        <div class="pcs-drow"><span class="pcs-dlbl">Pincode:</span><strong>${o.Pincode}</strong></div>
+        <div class="pcs-drow"><span class="pcs-dlbl">Division:</span>${esc(o.Division||'N/A')}</div>
+        <div class="pcs-drow"><span class="pcs-dlbl">Region:</span>${esc(o.Region||'N/A')}</div>
+        <div class="pcs-drow"><span class="pcs-dlbl">Circle:</span>${esc(o.Circle||'N/A')}</div>
+        <div class="pcs-drow"><span class="pcs-dlbl">Taluk:</span>${esc(o.Taluk||'N/A')}</div>
+        <div style="font-size:10px;color:#3498db;font-family:monospace;margin-top:4px">/${slug}</div>
+      </div>
+      <button class="pcs-copy-btn" onclick="window.pcsCopy(this)">
+        <span class="cp-no">Copy Details</span><span class="cp-yes">&#x2713; Copied!</span>
+      </button>
+      <button class="pcs-fullinfo-btn" onclick="window.pcsClose();window.pcsFullPage('${ea(o.Name)}','${o.Pincode}')">
+        See Full Information ↗
+      </button>`;
+  });
+};
+
+window.pcsClose=function(){
+  [g('pcs-popup'),g('pcs-ov')].forEach(e=>{if(e)e.style.display='none';});
+  document.querySelector('.pcs-res-item.sel')?.classList.remove('sel');
+};
+window.pcsCopy=function(btn){
+  const t=g('pcs-popup')?.querySelector('.pcs-popup-body')?.innerText||'';
+  navigator.clipboard.writeText(t).then(()=>{btn.classList.add('copied');setTimeout(()=>btn.classList.remove('copied'),2000);}).catch(()=>alert('Copy failed.'));
+};
+
+/* ══════ FULL PAGE — NEW ══════ */
+window.pcsFullPage=function(name,pin){
+  doFetch(`${API}/pincode/${pin}`,'pin:'+pin,false).then(all=>{
+    const o=all.find(p=>p.Name===name)||all[0];
+    if(!o){alert('Could not load full details. Please try again.');return;}
+    buildFullPage(o,all);
+  }).catch(()=>{
+    /* fallback to local data */
+    const loc=LOCAL.find(l=>l.Name===name&&l.Pincode===pin);
+    if(loc)buildFullPage(loc,[loc]);
+    else alert('Could not load. Please check your connection.');
+  });
+};
+
+function buildFullPage(o,all){
+  const stateSlug=toSlug(o.State);
+  const distSlug=toSlug(o.District);
+  const poSlug=toSlug(o.Name);
+  const fullSlug=stateSlug+'/'+distSlug+'/'+poSlug+'/'+o.Pincode;
+
+  /* URL */
+  setURL(fullSlug);
+
+  /* Breadcrumb */
+  g('fp-bc').innerHTML=`
+    <span class="fp-bc-link" onclick="goBackToSearch()">🏠 Home</span>
+    <span class="fp-bc-sep">›</span>
+    <span class="fp-bc-link" onclick="showStateLevel('${esc(o.State)}','${stateSlug}')">${esc(o.State)}</span>
+    <span class="fp-bc-sep">›</span>
+    <span class="fp-bc-link" onclick="showDistrictLevel('${esc(o.State)}','${stateSlug}','${esc(o.District)}','${distSlug}')">${esc(o.District)}</span>
+    <span class="fp-bc-sep">›</span>
+    <span class="fp-bc-link" onclick="showPOLevel('${esc(o.State)}','${stateSlug}','${esc(o.District)}','${distSlug}','${esc(o.Name)}','${poSlug}','${o.Pincode}')">${esc(o.Name)}</span>
+    <span class="fp-bc-sep">›</span>
+    <span class="fp-bc-cur">${o.Pincode}</span>`;
+
+  /* Hero */
+  g('fp-pin-num').textContent=o.Pincode;
+  g('fp-po-name').textContent=o.Name+' Post Office';
+  g('fp-po-loc').textContent=(o.Block&&o.Block!=='NA'?o.Block+', ':'')+o.District+', '+o.State;
+
+  /* Details */
+  g('fp-dist').textContent=o.District;
+  g('fp-state').textContent=o.State;
+  g('fp-div').textContent=o.Division||'N/A';
+  g('fp-reg').textContent=o.Region||'N/A';
+  g('fp-cir').textContent=o.Circle||'N/A';
+  g('fp-type').textContent=o.BranchType||'Post Office';
+
+  /* Content */
+  g('fp-content-title').textContent='About '+o.Name+' — Pincode '+o.Pincode;
+  g('fp-content-body').textContent=o.Name+' is located in '+o.District+', '+o.State+
+    '. The PIN code '+o.Pincode+' serves this area under the '+(o.Division||'N/A')+
+    ' division, '+(o.Circle||'N/A')+' circle, '+(o.Region||'N/A')+' region. '+
+    'Use pincode '+o.Pincode+' for sending letters, courier deliveries, online shopping orders, '+
+    'and government correspondence to '+o.Name+' area. This post office operates as a '+
+    (o.BranchType||'Post Office')+'.';
+
+  /* Same pincode others */
+  const same=all.filter(p=>p.Name!==o.Name);
+  g('fp-same-title').textContent='Other post offices under pincode '+o.Pincode;
+  g('fp-same-list').innerHTML=same.length
+    ?same.map(p=>`<div class="fp-same-row" onclick="window.pcsFullPage('${ea(p.Name)}','${p.Pincode}')">
+        <div><div class="fp-sr-name">${esc(p.Name)}</div><div class="fp-sr-type">${esc(p.BranchType||'Post Office')}</div></div>
+        <div style="font-size:11px;color:#3498db;font-family:monospace">${p.Pincode}</div>
+      </div>`).join('')
+    :'<div style="font-size:13px;color:#999;padding:6px">No other post offices share this pincode</div>';
+
+  /* Nearby from local data */
+  const nearby=LOCAL.filter(l=>l.District===o.District&&l.Pincode!==o.Pincode).slice(0,6);
+  g('fp-nearby-chips').innerHTML=nearby.map(n=>
+    `<div class="fp-nearby-chip" onclick="window.pcsFullPage('${ea(n.Name)}','${n.Pincode}')">
+      <strong>${esc(n.Name)}</strong><br><small>${esc(n.District)} — ${n.Pincode}</small>
+    </div>`).join('');
+
+  /* Show full page, hide search */
+  g('fp-pin-section').style.display='block';
+  g('fp-list-section').style.display='none';
+  g('search-page').style.display='none';
+  g('fullpage').style.display='block';
+  window.scrollTo(0,0);
+}
+
+/* Hierarchy level pages */
+function showStateLevel(state,stateSlug){
+  setURL(stateSlug);
+  g('fp-bc').innerHTML=`
+    <span class="fp-bc-link" onclick="goBackToSearch()">🏠 Home</span>
+    <span class="fp-bc-sep">›</span>
+    <span class="fp-bc-cur">${esc(state)}</span>`;
+  const districts=[...new Set(LOCAL.filter(l=>l.State===state).map(l=>l.District))].sort();
+  g('fp-list-title').innerHTML=`All districts in ${esc(state)} <span style="font-size:12px;color:#7f8c8d;font-weight:400">(${districts.length} districts)</span>`;
+  g('fp-list-items').innerHTML=districts.map(d=>{
+    const pos=LOCAL.filter(l=>l.State===state&&l.District===d);
+    const distSlug=toSlug(d);
+    return`<div class="fp-item-row" onclick="showDistrictLevel('${ea(state)}','${stateSlug}','${ea(d)}','${distSlug}')">
+      <div>
+        <div class="fp-ir-name">${esc(d)}</div>
+        <div class="fp-ir-sub">${pos.length} post offices in local data</div>
+        <div class="fp-url-hint">/${stateSlug}/${distSlug}/</div>
+      </div>
+      <div class="fp-ir-badge">Browse →</div>
+    </div>`;}).join('');
+  g('fp-pin-section').style.display='none';
+  g('fp-list-section').style.display='block';
+  g('search-page').style.display='none';
+  g('fullpage').style.display='block';
+}
+
+function showDistrictLevel(state,stateSlug,dist,distSlug){
+  setURL(stateSlug+'/'+distSlug);
+  g('fp-bc').innerHTML=`
+    <span class="fp-bc-link" onclick="goBackToSearch()">🏠 Home</span>
+    <span class="fp-bc-sep">›</span>
+    <span class="fp-bc-link" onclick="showStateLevel('${ea(state)}','${stateSlug}')">${esc(state)}</span>
+    <span class="fp-bc-sep">›</span>
+    <span class="fp-bc-cur">${esc(dist)}</span>`;
+  const pos=LOCAL.filter(l=>l.State===state&&l.District===dist);
+  g('fp-list-title').innerHTML=`Post offices in ${esc(dist)}, ${esc(state)} <span style="font-size:12px;color:#7f8c8d;font-weight:400">(${pos.length} in local data)</span>`;
+  g('fp-list-items').innerHTML=pos.map(p=>{
+    const poSlug=toSlug(p.Name);
+    return`<div class="fp-item-row" onclick="window.pcsFullPage('${ea(p.Name)}','${p.Pincode}')">
+      <div>
+        <div class="fp-ir-name">${esc(p.Name)}</div>
+        <div class="fp-ir-sub">${esc(p.District)}, ${esc(p.State)}</div>
+        <div class="fp-url-hint">/${stateSlug}/${distSlug}/${poSlug}/${p.Pincode}</div>
+      </div>
+      <div class="fp-ir-badge">${p.Pincode}</div>
+    </div>`;}).join('');
+  g('fp-pin-section').style.display='none';
+  g('fp-list-section').style.display='block';
+  g('search-page').style.display='none';
+  g('fullpage').style.display='block';
+}
+
+function showPOLevel(state,stateSlug,dist,distSlug,poName,poSlug,pin){
+  window.pcsFullPage(poName,pin);
+}
+
+function goBackToSearch(){
+  g('fullpage').style.display='none';
+  g('search-page').style.display='block';
+  setURL('');
+  document.getElementById('url-display').textContent='pincodesearch.in';
+  window.scrollTo(0,0);
+}
+
+/* ══════ NEARBY — UNCHANGED ══════ */
+function findNearby(main){
+  if(!main)return;
+  doFetch(`${API}/postoffice/${encodeURIComponent(main.District)}`,'po:'+main.District.toLowerCase(),false)
+    .then(all=>{
+      const areas=all.filter(p=>String(p.Pincode)!==String(main.Pincode)).slice(0,6);
+      if(!areas.length){hideNearby();return;}
+      const wrap=g('pcs-nearby-labels');wrap.innerHTML='';
+      areas.forEach(a=>{
+        const d=ce('div');d.className='pcs-nearby-item';
+        d.innerHTML=`<strong>${esc(a.Name)}</strong><br><small>${esc(a.Block||'N/A')}, ${esc(a.District)} &mdash; ${a.Pincode}</small>`;
+        d.onclick=()=>window.pcsDetail(a.Name,a.Pincode,d);
+        wrap.appendChild(d);
+      });
+      g('pcs-nearby').style.display='block';
+    }).catch(hideNearby);
+}
+function hideNearby(){const n=g('pcs-nearby');if(n)n.style.display='none';}
+
+/* ══════ LABELS — UNCHANGED ══════ */
+const POPULAR=['Mumbai','Delhi','Bangalore','Chennai','Kolkata','Pune','Hyderabad','Jaipur',
+  'Ahmedabad','Surat','Lucknow','Noida','Gurugram','Chandigarh','Patna','Indore',
+  'Nagpur','Varanasi','Goa','Kochi','Amritsar','Dehradun','Agra','Bhopal'];
+function initLabels(){
+  const c=g('pcs-labels');c.innerHTML='';
+  POPULAR.forEach(l=>{
+    const d=ce('div');d.className='pcs-lbl';d.textContent=l;
+    d.onclick=()=>{g('pcs-input').value=l;bg(`${API}/postoffice/${encodeURIComponent(l)}`,'po:'+l.toLowerCase());doSearch();};
+    c.appendChild(d);
+  });
+}
+
+/* ══════ HISTORY — UNCHANGED ══════ */
+const USER_ORDER_KEY='pcsOrder_v1';
+const TOUCHED_KEY='pcsUserTouched';
+const DEFAULT_POPULAR=['Mumbai','Delhi','Bangalore','Chennai','Kolkata','Hyderabad','Pune',
+  'Ahmedabad','Jaipur','Surat','Lucknow','Noida','Gurugram','Chandigarh',
+  'Patna','Bhopal','Indore','Nagpur','Varanasi','Goa','Agra','Kochi',
+  'Coimbatore','Dehradun','Amritsar','Visakhapatnam','Ranchi','Raipur','Guwahati','Leh'];
+function hasUserSearched(){return localStorage.getItem(TOUCHED_KEY)==='1';}
+function getUserOrder(){try{const raw=localStorage.getItem(USER_ORDER_KEY);if(raw)return JSON.parse(raw);}catch(e){}return[];}
+function addHist(q){
+  if(!q||q.length<2)return;
+  localStorage.setItem(TOUCHED_KEY,'1');
+  let order=getUserOrder();
+  order=order.filter(i=>i.toLowerCase()!==q.toLowerCase());
+  order.unshift(q.trim());order=order.slice(0,30);
+  try{localStorage.setItem(USER_ORDER_KEY,JSON.stringify(order));}catch(e){}
+  renderHist();
+}
+function renderHist(){
+  const box=g('pcs-hist');if(!box)return;box.innerHTML='';
+  const order=getUserOrder();
+  const list=(hasUserSearched()&&order.length)?order:DEFAULT_POPULAR;
+  list.forEach(q=>{
+    const d=ce('div');d.className='pcs-hist-item';d.textContent=q;
+    d.onclick=()=>{g('pcs-input').value=q;if(!/^\d{6}$/.test(q))bg(`${API}/postoffice/${encodeURIComponent(q)}`,'po:'+q.toLowerCase());doSearch();};
+    box.appendChild(d);
+  });
+}
+
+/* ══════ BOOT — UNCHANGED ══════ */
+window.addEventListener('load',()=>{
+  initLabels();renderHist();
+  const inp=g('pcs-input');
+  inp.addEventListener('input',onInput);
+  inp.addEventListener('keydown',onKey);
+  g('pcs-btn').addEventListener('click',doSearch);
+  document.addEventListener('click',e=>{if(!e.target.closest('.pcs-bar-wrap'))closeDrop();});
+  const WARM=['Mumbai','Delhi','Bangalore','Chennai','Hyderabad','Pune',
+    'Kolkata','Ahmedabad','Jaipur','Surat','Lucknow','Noida',
+    'Gurugram','Chandigarh','Patna','Bhopal','Indore','Nagpur','Varanasi','Goa'];
+  WARM.forEach((c,i)=>setTimeout(()=>bg(`${API}/postoffice/${encodeURIComponent(c)}`,'po:'+c.toLowerCase()),500+i*300));
+});
+
+/* ══════ UTILS — UNCHANGED ══════ */
+function g(id){return document.getElementById(id);}
+function ce(t){return document.createElement(t);}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function ea(s){return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
+})();
+</script>
+</body>
+</html>
