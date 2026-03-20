@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<script>
+  var full = window.location.pathname;
+  var repo = '/pincode-search';
+  var path = full.replace(repo, '') || '/';
+  sessionStorage.setItem('redirectPath', path);
+  window.location.replace(repo + '/');
+</script>
+</head>
+<body></body>
+</html>
