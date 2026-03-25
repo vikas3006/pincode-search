@@ -6,7 +6,6 @@
  */
 
 const POSTAL_API = 'https://api.postalpincode.in';
-const CACHE_TTL  = 86400; // 24 hours
 
 // ── slug helpers ──────────────────────────────────────────────
 function toSlug(s) {
@@ -21,38 +20,26 @@ function esc(s) {
     .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-// ── fetch with CF cache ───────────────────────────────────────
-async function fetchPostal(url, ctx) {
-  const cache = caches.default;
-  const cacheKey = new Request(url);
-  let cached = await cache.match(cacheKey);
-  if (cached) return cached.json();
-
-  const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
-  const data = await res.json();
-
-  // Store in cache
-  const toCache = new Response(JSON.stringify(data), {
-    headers: {
-      'Content-Type': 'application/json',
-      'Cache-Control': `public, max-age=${CACHE_TTL}`
-    }
-  });
-  ctx.waitUntil(cache.put(cacheKey, toCache));
-  return data;
-}
-
-async function fetchByPin(pin, ctx) {
+// ── fetch — simple and reliable, CF edge handles caching via Cache-Control ──
+async function fetchByPin(pin) {
   try {
-    const data = await fetchPostal(`${POSTAL_API}/pincode/${pin}`, ctx);
+    const res = await fetch(`${POSTAL_API}/pincode/${pin}`, {
+      headers: { 'Accept': 'application/json' },
+      cf: { cacheTtl: 86400, cacheEverything: true }
+    });
+    const data = await res.json();
     if (data?.[0]?.Status === 'Success') return data[0].PostOffice || [];
   } catch (e) {}
   return [];
 }
 
-async function fetchByPO(name, ctx) {
+async function fetchByPO(name) {
   try {
-    const data = await fetchPostal(`${POSTAL_API}/postoffice/${encodeURIComponent(name)}`, ctx);
+    const res = await fetch(`${POSTAL_API}/postoffice/${encodeURIComponent(name)}`, {
+      headers: { 'Accept': 'application/json' },
+      cf: { cacheTtl: 86400, cacheEverything: true }
+    });
+    const data = await res.json();
     if (data?.[0]?.Status === 'Success') return data[0].PostOffice || [];
   } catch (e) {}
   return [];
@@ -469,128 +456,145 @@ function buildErrorPage(message, siteUrl, siteName) {
 
 // ── MAIN HANDLER ──────────────────────────────────────────────
 export async function onRequest(context) {
-  const { request, env, waitUntil } = context;
+  const { request, env } = context;
   const url = new URL(request.url);
   const siteUrl = `${url.protocol}//${url.host}`;
   const siteName = env.SITE_NAME || 'PincodeSearch.in';
   const adsenseId = env.ADSENSE_ID || '';
 
-  // Skip static assets — let CF Pages serve them normally
   const path = url.pathname.replace(/\/+$/, '');
-  if (path === '' || path === '/index.html') return; // Let CF Pages serve index.html
-  if (path.includes('.')) return; // Static file — pass through
+
+  // Root and static files — serve index.html directly
+  if (path === '' || path === '/index.html') {
+    return env.ASSETS.fetch(new Request(`${siteUrl}/index.html`));
+  }
+
+  // Pass through any file with an extension (.css, .js, .png etc)
+  if (path.includes('.')) {
+    return env.ASSETS.fetch(request);
+  }
 
   const parts = path.split('/').filter(Boolean);
 
-  // ── /states/ ──────────────────────────────────────────────
-  if (parts[0] === 'states' && parts.length === 1) {
-    const STATES = [
-      'Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chandigarh','Chhattisgarh',
-      'Delhi','Goa','Gujarat','Haryana','Himachal Pradesh','Jammu & Kashmir','Jharkhand',
-      'Karnataka','Kerala','Ladakh','Madhya Pradesh','Maharashtra','Manipur','Meghalaya',
-      'Mizoram','Nagaland','Odisha','Punjab','Rajasthan','Sikkim','Tamil Nadu',
-      'Telangana','Tripura','Uttar Pradesh','Uttarakhand','West Bengal'
-    ];
-    const rows = STATES.map(s =>
-      `<a class="lr" href="/${toSlug(s)}/">
-        <div><div class="lrn">${esc(s)}</div><div class="uh">/${toSlug(s)}/</div></div>
-        <div class="lrb">Browse &#8594;</div>
-      </a>`).join('');
-    const body = `
-      <div class="bc"><a href="/">&#127968; Home</a><span class="bcs">&#8250;</span><span class="bcc">All States</span></div>
-      ${adBox()}
-      <div class="cd">
-        <div class="pt">All States <span class="cn">${STATES.length} states</span></div>
-        <div class="ps">Browse pincodes by state</div>
-        <div class="sec"><div class="st">Select Your State</div>${rows}</div>
-      </div>
-    `;
-    const html = htmlShell('All Indian States Pincode List', 'Browse pincodes for all states in India.',
-      `${siteUrl}/states/`, null, siteUrl, siteName, body, adsenseId);
-    return new Response(html, {
-      headers: { 'Content-Type': 'text/html;charset=UTF-8', 'Cache-Control': 'public, max-age=86400' }
-    });
+  // No parts — serve home
+  if (!parts.length) {
+    return env.ASSETS.fetch(new Request(`${siteUrl}/index.html`));
   }
 
-  // ── /state/ ───────────────────────────────────────────────
-  if (parts.length === 1) {
-    const stateName = fromSlug(parts[0]);
-    // Fetch a known pincode from this state to get districts
-    const offices = await fetchByPO(stateName, { waitUntil });
-    if (!offices.length) {
-      const html = buildErrorPage(`State "${esc(stateName)}" not found`, siteUrl, siteName);
-      return new Response(html, { status: 404, headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
-    }
-    const districts = [...new Set(offices.filter(o => toSlug(o.State) === parts[0]).map(o => o.District))];
-    if (!districts.length) {
-      const html = buildErrorPage(`No districts found for "${esc(stateName)}"`, siteUrl, siteName);
-      return new Response(html, { status: 404, headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
-    }
-    const html = buildStatePage(stateName, districts, siteUrl, siteName);
-    return new Response(html, {
-      headers: { 'Content-Type': 'text/html;charset=UTF-8', 'Cache-Control': 'public, max-age=86400' }
-    });
-  }
+  try {
 
-  // ── /state/district/ ──────────────────────────────────────
-  if (parts.length === 2) {
-    const distName = fromSlug(parts[1]);
-    const offices = await fetchByPO(distName, { waitUntil });
-    if (!offices.length) {
-      const html = buildErrorPage(`District "${esc(distName)}" not found`, siteUrl, siteName);
-      return new Response(html, { status: 404, headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
+    // ── /states/ ──────────────────────────────────────────────
+    if (parts[0] === 'states' && parts.length === 1) {
+      const STATES = [
+        'Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chandigarh','Chhattisgarh',
+        'Delhi','Goa','Gujarat','Haryana','Himachal Pradesh','Jammu & Kashmir','Jharkhand',
+        'Karnataka','Kerala','Ladakh','Madhya Pradesh','Maharashtra','Manipur','Meghalaya',
+        'Mizoram','Nagaland','Odisha','Punjab','Rajasthan','Sikkim','Tamil Nadu',
+        'Telangana','Tripura','Uttar Pradesh','Uttarakhand','West Bengal'
+      ];
+      const rows = STATES.map(s =>
+        `<a class="lr" href="/${toSlug(s)}/">
+          <div><div class="lrn">${esc(s)}</div><div class="uh">/${toSlug(s)}/</div></div>
+          <div class="lrb">Browse &#8594;</div>
+        </a>`).join('');
+      const body = `
+        <div class="bc"><a href="/">&#127968; Home</a><span class="bcs">&#8250;</span><span class="bcc">All States</span></div>
+        ${adBox()}
+        <div class="cd">
+          <div class="pt">All States <span class="cn">${STATES.length} states</span></div>
+          <div class="ps">Browse pincodes by state</div>
+          <div class="sec"><div class="st">Select Your State</div>${rows}</div>
+        </div>
+      `;
+      const html = htmlShell('All Indian States Pincode List', 'Browse pincodes for all states in India.',
+        `${siteUrl}/states/`, null, siteUrl, siteName, body, adsenseId);
+      return new Response(html, {
+        headers: { 'Content-Type': 'text/html;charset=UTF-8', 'Cache-Control': 'public, max-age=86400' }
+      });
     }
-    const filtered = offices.filter(o => toSlug(o.District) === parts[1] || toSlug(o.State) === parts[0]);
-    const state = fromSlug(parts[0]);
-    const html = buildDistrictPage(distName, state, filtered.length ? filtered : offices, siteUrl, siteName);
-    return new Response(html, {
-      headers: { 'Content-Type': 'text/html;charset=UTF-8', 'Cache-Control': 'public, max-age=86400' }
-    });
-  }
 
-  // ── /state/district/postoffice/ ───────────────────────────
-  if (parts.length === 3) {
-    const poName = fromSlug(parts[2]);
-    const offices = await fetchByPO(poName, { waitUntil });
-    if (!offices.length) {
-      const html = buildErrorPage(`Post office "${esc(poName)}" not found`, siteUrl, siteName);
-      return new Response(html, { status: 404, headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
-    }
-    const district = fromSlug(parts[1]);
-    const state = fromSlug(parts[0]);
-    const html = buildPOPage(poName, district, state, offices, siteUrl, siteName);
-    return new Response(html, {
-      headers: { 'Content-Type': 'text/html;charset=UTF-8', 'Cache-Control': 'public, max-age=86400' }
-    });
-  }
-
-  // ── /state/district/postoffice/pincode/ ───────────────────
-  if (parts.length === 4) {
-    const pin = parts[3];
-    if (!/^\d{6}$/.test(pin)) {
-      const html = buildErrorPage(`Invalid pincode: ${esc(pin)}`, siteUrl, siteName);
-      return new Response(html, { status: 400, headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
-    }
-    const offices = await fetchByPin(pin, { waitUntil });
-    if (!offices.length) {
-      const html = buildErrorPage(`Pincode ${pin} not found in India Post database`, siteUrl, siteName);
-      return new Response(html, { status: 404, headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
-    }
-    // Find best matching post office
-    const poSlug = parts[2];
-    let o = offices.find(p => toSlug(p.Name) === poSlug);
-    if (!o) o = offices[0];
-
-    const html = buildPinPage(o, offices, siteUrl, siteName, adsenseId);
-    return new Response(html, {
-      headers: {
-        'Content-Type': 'text/html;charset=UTF-8',
-        'Cache-Control': 'public, max-age=86400',
-        'X-Robots-Tag': 'index, follow'
+    // ── /state/district/postoffice/pincode/ ───────────────────
+    if (parts.length === 4) {
+      const pin = parts[3];
+      if (!/^\d{6}$/.test(pin)) {
+        const html = buildErrorPage(`Invalid pincode: ${esc(pin)}`, siteUrl, siteName);
+        return new Response(html, { status: 400, headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
       }
-    });
-  }
+      const offices = await fetchByPin(pin);
+      if (!offices.length) {
+        const html = buildErrorPage(`Pincode ${pin} not found in India Post database`, siteUrl, siteName);
+        return new Response(html, { status: 404, headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
+      }
+      const poSlug = parts[2];
+      let o = offices.find(p => toSlug(p.Name) === poSlug);
+      if (!o) o = offices[0];
+      const html = buildPinPage(o, offices, siteUrl, siteName, adsenseId);
+      return new Response(html, {
+        headers: {
+          'Content-Type': 'text/html;charset=UTF-8',
+          'Cache-Control': 'public, max-age=86400',
+          'X-Robots-Tag': 'index, follow'
+        }
+      });
+    }
 
-  // ── Unknown path — let CF Pages 404 handle it ─────────────
-  return;
+    // ── /state/district/postoffice/ ───────────────────────────
+    if (parts.length === 3) {
+      const poName = fromSlug(parts[2]);
+      const offices = await fetchByPO(poName);
+      if (!offices.length) {
+        const html = buildErrorPage(`Post office "${esc(poName)}" not found`, siteUrl, siteName);
+        return new Response(html, { status: 404, headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
+      }
+      const district = fromSlug(parts[1]);
+      const state = fromSlug(parts[0]);
+      const html = buildPOPage(poName, district, state, offices, siteUrl, siteName);
+      return new Response(html, {
+        headers: { 'Content-Type': 'text/html;charset=UTF-8', 'Cache-Control': 'public, max-age=86400' }
+      });
+    }
+
+    // ── /state/district/ ──────────────────────────────────────
+    if (parts.length === 2) {
+      const distName = fromSlug(parts[1]);
+      const offices = await fetchByPO(distName);
+      if (!offices.length) {
+        const html = buildErrorPage(`District "${esc(distName)}" not found`, siteUrl, siteName);
+        return new Response(html, { status: 404, headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
+      }
+      const filtered = offices.filter(o => toSlug(o.District) === parts[1] || toSlug(o.State) === parts[0]);
+      const state = fromSlug(parts[0]);
+      const html = buildDistrictPage(distName, state, filtered.length ? filtered : offices, siteUrl, siteName);
+      return new Response(html, {
+        headers: { 'Content-Type': 'text/html;charset=UTF-8', 'Cache-Control': 'public, max-age=86400' }
+      });
+    }
+
+    // ── /state/ ───────────────────────────────────────────────
+    if (parts.length === 1) {
+      const stateName = fromSlug(parts[0]);
+      const offices = await fetchByPO(stateName);
+      if (!offices.length) {
+        const html = buildErrorPage(`State "${esc(stateName)}" not found`, siteUrl, siteName);
+        return new Response(html, { status: 404, headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
+      }
+      const districts = [...new Set(offices.filter(o => toSlug(o.State) === parts[0]).map(o => o.District))];
+      if (!districts.length) {
+        const html = buildErrorPage(`No districts found for "${esc(stateName)}"`, siteUrl, siteName);
+        return new Response(html, { status: 404, headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
+      }
+      const html = buildStatePage(stateName, districts, siteUrl, siteName);
+      return new Response(html, {
+        headers: { 'Content-Type': 'text/html;charset=UTF-8', 'Cache-Control': 'public, max-age=86400' }
+      });
+    }
+
+    // Unknown path — serve search page
+    return env.ASSETS.fetch(new Request(`${siteUrl}/index.html`));
+
+  } catch (err) {
+    // Any unexpected error — show friendly error page
+    const html = buildErrorPage('Something went wrong. Please try again.', siteUrl, siteName);
+    return new Response(html, { status: 500, headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
+  }
 }
