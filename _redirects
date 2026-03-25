@@ -1,0 +1,2 @@
+# Force trailing slash on all pincode paths (SEO canonical consistency)
+# Cloudflare Pages function handles the actual routing

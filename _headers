@@ -1,0 +1,12 @@
+/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+/
+  Cache-Control: public, max-age=3600
+
+/*.html
+  Cache-Control: public, max-age=3600
+
+/sitemap.xml
+  Content-Type: application/xml
+  Cache-Control: public, max-age=86400
